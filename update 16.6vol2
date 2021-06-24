@@ -6,12 +6,13 @@
  #include "MQTTNetwork.h"
  #include "MQTTmbed.h"
  #include "MQTTClient.h"
- #include <string.h>
-
+ #include <string>
+ #include <sstream>
 
  #define TEMAPUBBROJNIK "ugradbeni/brojnik"
  #define TEMAPUBNAZIVNIK "ugradbeni/nazivnik"
  #define TEMAPUBGRAF "ugradbeni/brojGrafa"
+
 
  #define MQTTCLIENT_QOS2 0
  
@@ -246,11 +247,17 @@ std::vector<double> koeficijenti(int T) //funkcija za unos koeficijenata -> vrac
                 wait_ms(200);
                 if(x1 >= 5 && x1 <= 30 && y1 >= 215 && y1 <= 240) //unos -
                 {   
-                    BSP_LCD_SetFont(&Font12);
-                    BSP_LCD_DisplayStringAt(70, 105, (uint8_t *)"-", LEFT_MODE);//ispisi minus na displej
-                    
-                    predznak = -1;
-                    i--;
+                   BSP_LCD_SetFont(&Font12);
+                    if(predznak == 1)
+                    {
+                        predznak = -1;
+                        BSP_LCD_DisplayStringAt(70, 105, (uint8_t *)"-", LEFT_MODE);
+                    }
+                    else
+                    {
+                        predznak = 1;
+                        BSP_LCD_DisplayStringAt(70, 105, (uint8_t *)" ", LEFT_MODE);
+                    }
                 }
                     
                 else
@@ -303,10 +310,8 @@ std::vector<double> koeficijenti(int T) //funkcija za unos koeficijenata -> vrac
                         i++;
                     }
                 }
-                
             }
         }
-    
         coef = dajBroj(unoseniBroj);
         //ret[brojac] = coef * predznak;
         ret.push_back(coef * predznak);
@@ -351,14 +356,20 @@ void BrojUString(char* broj, double num) {
 
 void IspisiBrojnikINazivnik(int y, int a) {
     std::vector<double> niz;
-    if(y == 82) niz = nizNula;
+    if(y == 82) niz = nizNula;//na osnovu y-koordinate teksta se prepoznaje je li brojnik ili nazivnik
     else niz = nizPolova;
     int step = niz.size();
     BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
-    
+    int izbrisano = 0;
     for(int i = 0; i < step; i++) {
         BSP_LCD_SetFont(&Font12);
         char broj[7];
+        if(niz.at(step - 1 - i) == 0) {
+            niz.erase(niz.end() - 1 - i);
+            step--;
+            i--;
+            continue;
+        }
         BrojUString(broj, niz.at(step - 1 - i));
         if(i == 0 && niz.at(step - 1 - i)>0) broj[0] = ' ';
         BSP_LCD_DisplayStringAt( a + i*45 , y, (uint8_t *) broj, LEFT_MODE);
@@ -372,25 +383,30 @@ void IspisiBrojnikINazivnik(int y, int a) {
             
             BSP_LCD_SetFont(&Font8);
             if(i < step - 2) {
-                pomocnistring[0] = step - i - 1 + '0';
+                pomocnistring[0] = step - i - 1 + '0' + izbrisano;
                 pomocnistring[1] = '\0';
                 BSP_LCD_DisplayStringAt( a + i*45 + 42, y-6, (uint8_t *) pomocnistring, LEFT_MODE);
             }
-             
         } 
-        
     }
-    
-    
-    
 }
 
+int kolikonenultih(std::vector<double> vek) {
+    int brojac = 0;
+    for(double x : vek) 
+        if(x != 0) brojac++;
+        
+    return brojac;
+
+}
 
 void IspisiPrenosnuFunkciju() {
 
      int koefsirina;
-     if(nizNula.size() > nizPolova.size()) koefsirina = nizNula.size();
-     else koefsirina = nizPolova.size();
+   //  if(nizNula.size() > nizPolova.size()) koefsirina = nizNula.size();
+   //  else koefsirina = nizPolova.size();
+     if(kolikonenultih(nizPolova) > kolikonenultih(nizNula)) koefsirina = kolikonenultih(nizPolova);
+     else koefsirina = kolikonenultih(nizNula);
      BSP_LCD_Clear(LCD_COLOR_WHITE);
      BSP_LCD_SetTextColor(6591981);
      BSP_LCD_FillRect(0, 0, BSP_LCD_GetXSize(), 40);
@@ -403,8 +419,11 @@ void IspisiPrenosnuFunkciju() {
      BSP_LCD_SetFont(&Font12);
      BSP_LCD_DrawHLine((BSP_LCD_GetXSize() - koefsirina*42)/2, 96, koefsirina*42 );
 
-     IspisiBrojnikINazivnik(82,  (BSP_LCD_GetXSize() -  nizNula.size()*42)/2 - 8);
-     IspisiBrojnikINazivnik(105,  (BSP_LCD_GetXSize() -  nizPolova.size()*42)/2 - 8);
+   //  IspisiBrojnikINazivnik(82,  (BSP_LCD_GetXSize() -  nizNula.size()*42)/2 - 8);
+    // IspisiBrojnikINazivnik(105,  (BSP_LCD_GetXSize() -  nizPolova.size()*42)/2 - 8);
+    
+    IspisiBrojnikINazivnik(82,  (BSP_LCD_GetXSize() -   kolikonenultih(nizNula)*42)/2 - 8);
+    IspisiBrojnikINazivnik(105,  (BSP_LCD_GetXSize() -  kolikonenultih(nizPolova)*42)/2 - 8);
      
 } 
 
@@ -419,7 +438,7 @@ int OdabirDijagrama() {
      BSP_LCD_DisplayStringAt(0, 23, (uint8_t *)"za prikaz: ", LEFT_MODE);
      crtajTastaturu();
      
-     int odabir = 0; 
+     int odabir = 1; 
      
      
      BSP_LCD_DrawRect(80, 45, 80, 30);
@@ -436,42 +455,41 @@ int OdabirDijagrama() {
      BSP_TS_GetState(&TS_State);
      
      while(1) {
-         if(odabir == 0) {
+         if(odabir == 1) {
              BSP_LCD_DisplayStringAt(40, 123, (uint8_t *) "    ", LEFT_MODE);
              BSP_LCD_DisplayStringAt(40, 55, (uint8_t *) "--->", LEFT_MODE);
          }
-         if(odabir == 1) {
+         if(odabir == 2) {
              BSP_LCD_DisplayStringAt(40, 55, (uint8_t *) "    ", LEFT_MODE);
              BSP_LCD_DisplayStringAt(40, 90, (uint8_t *) "--->", LEFT_MODE);
          }
-         if(odabir == 2) {
+         if(odabir == 3) {
              BSP_LCD_DisplayStringAt(40, 90, (uint8_t *) "    ", LEFT_MODE);
              BSP_LCD_DisplayStringAt(40, 123, (uint8_t *) "--->", LEFT_MODE);
          }
           BSP_TS_GetState(&TS_State);
           if(TS_State.touchDetected) {
             uint16_t x1 = TS_State.touchX[0];
-            wait_ms(200);
+            wait_ms(100);
             uint16_t y1 = TS_State.touchY[0];
             
             if(dajCifru(x1, y1) == 10) return odabir;
             
 
             if(dajCifru(x1, y1) == 12) {
-                if(odabir == 2) odabir = 0;
+                if(odabir == 3) odabir = 1;
                 else odabir++;
              }
-            
          }
         
          wait_ms(200);
      }
      BSP_LCD_DisplayStringAt(40, 55, (uint8_t *) "--->", LEFT_MODE);
      BSP_LCD_DisplayStringAt(170, 55, (uint8_t *) "<---", LEFT_MODE);
-    return 0;
+    return odabir;
 }
 
-int mqtt()
+int mqtt(int opcijaGrafa)
 {
     printf("Ugradbeni sistemi\r\n");
     printf("Demonstracija korištenja MQTT protokola\r\n\r\n");
@@ -503,31 +521,60 @@ int mqtt()
         printf("rc from MQTT connect is %d\r\n", rc);
 
     MQTT::Message message;
-
-    // QoS 0
-    char buf[100];
-    while(1) {
+            //odabir grafa
+            char buf[100];
+            
             //koeficijenti brojnika
-            for(int i = 0; i < StepenBrojnika; i++)
-                sprintf(buf, "%.2f, ", nizNula[i]);
-            message.qos = MQTT::QOS0;
-            message.retained = false;
-            message.dup = false;
-            message.payload = (void*)buf;
-            message.payloadlen = strlen(buf);
-            rc = client.publish(TEMAPUBBROJNIK, message);
+            std::ostringstream vts;
+            char char_arrayNula[60], char_arrayPolova[60];
+  
+            if (!nizNula.empty())
+            {
+                std::copy(nizNula.begin(), nizNula.end()-1,
+                std::ostream_iterator<double>(vts, ","));
+                vts << nizNula.back();
+                std::string stringNula = vts.str();
+                int n = stringNula.length();
+                strcpy(char_arrayNula, stringNula.c_str());
+                message.qos = MQTT::QOS0;
+                message.retained = false;
+                message.dup = false;
+                message.payload = (void*)char_arrayNula;
+                message.payloadlen = strlen(char_arrayNula);
+                rc = client.publish(TEMAPUBBROJNIK, message);
+            }
+            
+            wait_ms(100);
             //koeficijenti nazivnika
-            for(int i = 0; i < StepenNazivnika; i++)
-                sprintf(buf, "%.2f, ", nizPolova[i]);
-            message.qos = MQTT::QOS0;
-            message.retained = false;
-            message.dup = false;
-            message.payload = (void*)buf;
-            message.payloadlen = strlen(buf);
-            rc = client.publish(TEMAPUBNAZIVNIK, message);
-        }
-        
-     wait(1);
+            std::ostringstream vts1;
+            if (!nizPolova.empty())
+            {
+                std::copy(nizPolova.begin(), nizPolova.end()-1,
+                std::ostream_iterator<double>(vts1, ","));
+                vts1 << nizPolova.back();
+                std::string stringPolova= vts1.str();
+                int n1 = stringPolova.length();
+                strcpy(char_arrayPolova, stringPolova.c_str());
+                message.qos = MQTT::QOS0;
+                message.retained = false;
+                message.dup = false;
+                message.payload = (void*)char_arrayPolova;
+                message.payloadlen = strlen(char_arrayPolova);
+                rc = client.publish(TEMAPUBNAZIVNIK, message);
+            }
+            wait_ms(100);
+            if (opcijaGrafa)
+            {
+                printf("TEST: %d\n", opcijaGrafa);
+                sprintf(buf, "%d", opcijaGrafa);
+                message.qos = MQTT::QOS0;
+                message.retained = false;
+                message.dup = false;
+                message.payload = (void*)buf;
+                message.payloadlen = strlen(buf);
+                rc = client.publish(TEMAPUBGRAF, message);
+            }
+
 }
 
  int main()
@@ -570,6 +617,6 @@ int mqtt()
      for(int i = 0; i < StepenNazivnika; i++)
         printf("%.1f\n", nizPolova[i]);
     printf("\n\n\n\n\n\n\n\n\n");
-    int r = mqtt();
+    int r = mqtt(a);
      wait(1);
  }
