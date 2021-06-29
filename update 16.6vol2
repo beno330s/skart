@@ -354,7 +354,7 @@ void BrojUString(char* broj, double num) {
     }
 }
 
-void IspisiBrojnikINazivnik(int y, int a) {
+void IspisiBrojnikINazivnik(int y, int x) {
     std::vector<double> niz;
     if(y == 82) niz = nizNula;//na osnovu y-koordinate teksta se prepoznaje je li brojnik ili nazivnik
     else niz = nizPolova;
@@ -372,20 +372,20 @@ void IspisiBrojnikINazivnik(int y, int a) {
         }
         BrojUString(broj, niz.at(step - 1 - i));
         if(i == 0 && niz.at(step - 1 - i)>0) broj[0] = ' ';
-        BSP_LCD_DisplayStringAt( a + i*45 , y, (uint8_t *) broj, LEFT_MODE);
+        BSP_LCD_DisplayStringAt( x + i*45 , y, (uint8_t *) broj, LEFT_MODE);
         if(i < step- 1) {
             char pomocnistring[2];
             pomocnistring[0] = 's';
             pomocnistring[1] = '\0';
             
-            BSP_LCD_DisplayStringAt( a + i*45 + 35, y, (uint8_t *) pomocnistring, LEFT_MODE);
+            BSP_LCD_DisplayStringAt( x + i*45 + 35, y, (uint8_t *) pomocnistring, LEFT_MODE);
             
             
             BSP_LCD_SetFont(&Font8);
             if(i < step - 2) {
                 pomocnistring[0] = step - i - 1 + '0';
                 pomocnistring[1] = '\0';
-                BSP_LCD_DisplayStringAt( a + i*45 + 42, y-6, (uint8_t *) pomocnistring, LEFT_MODE);
+                BSP_LCD_DisplayStringAt( x + i*45 + 42, y-6, (uint8_t *) pomocnistring, LEFT_MODE);
             }
         } 
     }
