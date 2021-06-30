@@ -18,7 +18,6 @@
  
 int arrivedcount = 0;
 
-
 char* str;
  
  TS_StateTypeDef TS_State = { 0 };
@@ -47,16 +46,15 @@ void IspisZaStepenBrojnikaINazivnika(bool T) { //Od T zavisi je li brojnik ili n
 
 void CrtajOkvirove(bool T) { //Crta okvir, tacnije mjesta predvidjena za cifre
     int a = 80;
-    BSP_LCD_Clear(LCD_COLOR_WHITE);//
-    if(!T) ispisNuleTekst();//
-    else ispisPoloviTekst();//
-    crtajTastaturu();//
+    BSP_LCD_Clear(LCD_COLOR_WHITE);
+    if(!T) ispisNuleTekst();
+    else ispisPoloviTekst();
+    crtajTastaturu();
     BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
     BSP_LCD_SetFont(&Font12);
     BSP_LCD_DisplayStringAt(a + 7, 105, (uint8_t *)"-", LEFT_MODE);
     BSP_LCD_DisplayStringAt(a + 31, 105, (uint8_t *)"-", LEFT_MODE);
     BSP_LCD_DisplayStringAt(a + 60, 105, (uint8_t *)"-", LEFT_MODE);
-   // BSP_LCD_DrawRect(a - 24, 91, 19, 9);
     BSP_LCD_DrawRect(a, 95, 19, 29);
     BSP_LCD_DrawRect(a + 24, 95, 19, 29);
     BSP_LCD_FillCircle(a + 48, 121, 2);
@@ -76,7 +74,7 @@ int StepenBrojnikaIliNazivnika(bool T) {//Stepen polinoma u brojniku ili nazivni
             wait_ms(200);
             uint16_t y1 = TS_State.touchY[0];
             //wait_ms(200);
-            if(dajCifru(x1, y1) >= 0 && dajCifru(x1, y1) <= 5) { //Stepen pripada [0, 5]
+            if(dajCifru(x1, y1) >= 0 && dajCifru(x1, y1) <= 5) { //Stepen pripada [0, 4]
                 stepen = dajCifru(x1, y1);
                 cifra[0] = stepen + 48;
                 BSP_LCD_SetFont(&Font24);
@@ -90,7 +88,7 @@ int StepenBrojnikaIliNazivnika(bool T) {//Stepen polinoma u brojniku ili nazivni
      }
 }
 
- void ispisNuleTekst()//unesite koeficijente za nule
+ void ispisNuleTekst()//Unesite koeficijente polinoma u brojniku
  {
      BSP_LCD_Clear(LCD_COLOR_WHITE);
      BSP_LCD_SetTextColor(6591981);
@@ -102,7 +100,7 @@ int StepenBrojnikaIliNazivnika(bool T) {//Stepen polinoma u brojniku ili nazivni
      BSP_LCD_DisplayStringAt(0, 23, (uint8_t *)"za nule: ", LEFT_MODE);
      crtajTastaturu();
  }
- void ispisPoloviTekst()//unesite koeficijente za polove
+ void ispisPoloviTekst()//Unesite koeficijente polinoma u nazivniku
  {
      BSP_LCD_SetTextColor(6591981);
      BSP_LCD_FillRect(0, 0, BSP_LCD_GetXSize(), 40);
@@ -112,6 +110,7 @@ int StepenBrojnikaIliNazivnika(bool T) {//Stepen polinoma u brojniku ili nazivni
      BSP_LCD_DisplayStringAt(0, 8, (uint8_t *)"Unesite koeficijente", LEFT_MODE);
      BSP_LCD_DisplayStringAt(0, 23, (uint8_t *)"za polove: ", LEFT_MODE);
  }
+ 
  void crtajTastaturu()
  {
      BSP_LCD_SetTextColor(LCD_COLOR_GRAY);
@@ -147,6 +146,7 @@ int StepenBrojnikaIliNazivnika(bool T) {//Stepen polinoma u brojniku ili nazivni
      BSP_LCD_FillRect(155,185,80,25);
      BSP_LCD_DisplayStringAt(167,190, (uint8_t *)"BRISI", LEFT_MODE);
  }
+ 
  int dajCifru(int x1, int y1)
  {
      int broj;
@@ -211,7 +211,7 @@ void brisiCifru(int x, int y)
         BSP_LCD_DisplayStringAt(a + 60, 104, (uint8_t *)"-", LEFT_MODE);
 }
 
-std::vector<double> koeficijenti(int T) //funkcija za unos koeficijenata -> vraca niz sa koeficijentima
+std::vector<double> koeficijenti(int T) //Funkcija za unos koeficijenata -> vraca niz sa koeficijentima
 {
     std::vector<double> ret;
     int unoseniBroj[3];
@@ -313,17 +313,12 @@ std::vector<double> koeficijenti(int T) //funkcija za unos koeficijenata -> vrac
             }
         }
         coef = dajBroj(unoseniBroj);
-        //ret[brojac] = coef * predznak;
         ret.push_back(coef * predznak);
-         printf("%.1f\n", ret[brojac]);
-         
-        
+
         predznak = 1;
         brojac++;
     }
-    printf("\n");
-    for(int i = 0; i < stepen; i++)
-        printf("%.1f\n", ret[i]);
+
     return ret;
 }
 
@@ -333,7 +328,6 @@ void BrojUString(char* broj, double num) {
         num *= -1;
     }
     else broj[0] = '+';
-    printf("Broj: %.2f\n", num);
     int pomocnibroj = num*10;
     int decimala = pomocnibroj%10;
     
@@ -356,11 +350,10 @@ void BrojUString(char* broj, double num) {
 
 void IspisiBrojnikINazivnik(int y, int x) {
     std::vector<double> niz;
-    if(y == 82) niz = nizNula;//na osnovu y-koordinate teksta se prepoznaje je li brojnik ili nazivnik
+    if(y == 82) niz = nizNula;//Na osnovu y-koordinate teksta se prepoznaje je li brojnik ili nazivnik
     else niz = nizPolova;
     int step = niz.size();
     BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
-  //  int izbrisano = 0;
     for(int i = 0; i < step; i++) {
         BSP_LCD_SetFont(&Font12);
         char broj[7];
@@ -391,20 +384,18 @@ void IspisiBrojnikINazivnik(int y, int x) {
     }
 }
 
-int kolikonenultih(std::vector<double> vek) {
+int kolikonenultih(std::vector<double> vek) { //Broj nenultih koeficijenata
+    //Nema potrebe da se ispisuju clanovi polinoma ciji su koeficijenti nula
     int brojac = 0;
     for(double x : vek) 
         if(x != 0) brojac++;
         
     return brojac;
-
 }
 
 void IspisiPrenosnuFunkciju() {
 
      int koefsirina;
-   //  if(nizNula.size() > nizPolova.size()) koefsirina = nizNula.size();
-   //  else koefsirina = nizPolova.size();
      if(kolikonenultih(nizPolova) > kolikonenultih(nizNula)) koefsirina = kolikonenultih(nizPolova);
      else koefsirina = kolikonenultih(nizNula);
      BSP_LCD_Clear(LCD_COLOR_WHITE);
@@ -419,9 +410,6 @@ void IspisiPrenosnuFunkciju() {
      BSP_LCD_SetFont(&Font12);
      BSP_LCD_DrawHLine((BSP_LCD_GetXSize() - koefsirina*42)/2, 96, koefsirina*42 );
 
-   //  IspisiBrojnikINazivnik(82,  (BSP_LCD_GetXSize() -  nizNula.size()*42)/2 - 8);
-    // IspisiBrojnikINazivnik(105,  (BSP_LCD_GetXSize() -  nizPolova.size()*42)/2 - 8);
-    
     IspisiBrojnikINazivnik(82,  (BSP_LCD_GetXSize() -   kolikonenultih(nizNula)*42)/2 - 8);
     IspisiBrojnikINazivnik(105,  (BSP_LCD_GetXSize() -  kolikonenultih(nizPolova)*42)/2 - 8);
      
@@ -486,13 +474,11 @@ int OdabirDijagrama() {
      }
      BSP_LCD_DisplayStringAt(40, 55, (uint8_t *) "--->", LEFT_MODE);
      BSP_LCD_DisplayStringAt(170, 55, (uint8_t *) "<---", LEFT_MODE);
-    return odabir;
+     return odabir;
 }
 
-int mqtt(int opcijaGrafa)
+int mqtt()
 {
-    printf("Ugradbeni sistemi\r\n");
-    printf("Demonstracija korištenja MQTT protokola\r\n\r\n");
 
     NetworkInterface *network;
     network = NetworkInterface::get_default_instance();
@@ -562,19 +548,45 @@ int mqtt(int opcijaGrafa)
                 message.payloadlen = strlen(char_arrayPolova);
                 rc = client.publish(TEMAPUBNAZIVNIK, message);
             }
-            wait_ms(100);
-            if (opcijaGrafa)
-            {
-                printf("TEST: %d\n", opcijaGrafa);
-                sprintf(buf, "%d", opcijaGrafa);
-                message.qos = MQTT::QOS0;
-                message.retained = false;
-                message.dup = false;
-                message.payload = (void*)buf;
-                message.payloadlen = strlen(buf);
-                rc = client.publish(TEMAPUBGRAF, message);
-            }
+}
 
+int mqttGraf(int opcijaGrafa) {
+     NetworkInterface *network;
+    network = NetworkInterface::get_default_instance();
+    
+    if (!network) {
+        return -1;
+    }
+
+    MQTTNetwork mqttNetwork(network);
+
+    MQTT::Client<MQTTNetwork, Countdown> client(mqttNetwork);
+    
+    const char* hostname = "broker.hivemq.com";
+    int port = 1883;
+    printf("Connecting to %s:%d\r\n", hostname, port);
+    int rc = mqttNetwork.connect(hostname, port);
+    if (rc != 0)
+        printf("rc from TCP connect is %d\r\n", rc);
+
+    MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
+    data.MQTTVersion = 3;
+    data.clientID.cstring = "ugradbeni";
+    data.username.cstring = "";
+    data.password.cstring = "";
+    if ((rc = client.connect(data)) != 0)
+        printf("rc from MQTT connect is %d\r\n", rc);
+        
+     MQTT::Message message;
+     char buf[100];
+     
+    sprintf(buf, "%d", opcijaGrafa);
+    message.qos = MQTT::QOS0;
+    message.retained = false;
+    message.dup = false;
+    message.payload = (void*)buf;
+    message.payloadlen = strlen(buf);
+    rc = client.publish(TEMAPUBGRAF, message);
 }
 
  int main()
@@ -607,16 +619,22 @@ int mqtt(int opcijaGrafa)
          }
          wait_ms(25);
      }
-     //OVDJE CE DOCI JEDNA PETLJA KOJA CE SE STALNO VRTITI I OMOGUCITI DA SE ODABERE PONOVO
-     //JOS JEDAN DIJAGRAM
-     int a = OdabirDijagrama();
-     printf("Odabran je: %d \n", a);
-     for(int i = 0; i < StepenBrojnika; i++)
-        printf("%.1f\n", nizNula[i]);
-     printf("Koeficijenti nazivnika: \n");
-     for(int i = 0; i < StepenNazivnika; i++)
-        printf("%.1f\n", nizPolova[i]);
-    printf("\n\n\n\n\n\n\n\n\n");
-    int r = mqtt(a);
+    int a = OdabirDijagrama();
+    
+    int r = mqtt();
+    r = mqttGraf(a);
+    
+    int provjera = a;
+    while(1) {
+        
+        a = OdabirDijagrama();
+        if(a != provjera) {
+            r = mqttGraf(a);
+            provjera = a;
+        }
+        
+        wait(1);
+    }
+    
      wait(1);
  }
